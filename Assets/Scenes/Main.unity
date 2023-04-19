@@ -155,7 +155,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb3556a4cdc5b1947a40a94df959c3ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  range: 1.39
+  range: 4.32
 --- !u!135 &602761418
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -227,7 +227,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 602761416}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.53, y: 0.23, z: -5.12}
+  m_LocalPosition: {x: 0.53, y: 3.19, z: -4.06}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

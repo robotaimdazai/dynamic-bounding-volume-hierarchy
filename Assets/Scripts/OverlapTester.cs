@@ -11,17 +11,11 @@ public class OverlapTester : MonoBehaviour
     private void Update()
     {
         _ray= new Ray(transform.position, transform.forward);
-        var p1 = _ray.origin;
-        var p2 = _ray.origin + _ray.direction * range;
         foreach (DBHVComponent component in DBVHBase.AllComponents)
         {
-            if (component.AABB.Intersects(_ray))
+            if (component.AABB.Intersects(_ray,range))
             {
-                Debug.Log("Hit");
-            }
-            else
-            {
-                Debug.Log("No hit");
+                Debug.Log("Hit: "+component.name);
             }
         }
     }
