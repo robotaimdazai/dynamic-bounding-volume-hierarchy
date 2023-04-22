@@ -2,19 +2,21 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml.Schema;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Tree
 {
-    private List<Node> _nodes;
-    private int _nodeCount = 0;
+    private  List<Node> _nodes = new();
+    private int _nodeCount = -1;
     private int _rootIndex;
     private readonly int _nullIndex = -1;
+    public List<Node> Nodes => _nodes;
 
     public void InsertLeaf(AABB box)
     {
         int leafIndex = AllocateLeafNode(box);
-        if (_nodeCount == 1)
+        if (_nodeCount == 0)
         {
             _rootIndex = leafIndex;
             return;
@@ -34,7 +36,7 @@ public class Tree
         _nodes[newParent].Box = box.Union(_nodes[sibling].Box);
         if (oldParent != _nullIndex)
         {
-            // sibling is not root
+            // sibling was not root
             if (_nodes[oldParent].Child1 == sibling)
             {
                 _nodes[oldParent].Child1 = newParent;
@@ -56,6 +58,7 @@ public class Tree
             _nodes[newParent].Child2 = leafIndex;
             _nodes[sibling].ParentIndex = newParent;
             _nodes[leafIndex].ParentIndex = newParent;
+            _rootIndex = newParent;
         }
 
         //3, Traverse the tree upwards refitting AABBs
@@ -71,24 +74,60 @@ public class Tree
 
     }
 
+    public static int Raycast(Tree tree, Ray ray, float range )
+    {
+       return tree.RayCast(ray, range);
+    }
+
+    private int RayCast(Ray ray, float range)
+    {
+        if (_rootIndex == _nullIndex) return _nullIndex;
+        Stack<int> stack = new();
+        stack.Push(_rootIndex);
+        while (stack.Count >0)
+        {
+            var index = stack.Pop();
+            _nodes[index].Hit = false;
+            if (!AABB.Intersects(_nodes[index].Box, ray, range))
+            {
+                continue;
+            }
+            if (_nodes[index].IsLeaf)
+            {
+                int objectIndex = _nodes[index].ObjectIndex;
+                Debug.Log(objectIndex);
+            }
+            else
+            {
+               
+                stack.Push(_nodes[index].Child1);
+                stack.Push(_nodes[index].Child2);
+            }
+            
+            _nodes[index].Hit = true;
+        }
+
+        return _nullIndex;
+    }
+
     private int AllocateLeafNode(AABB box)
     {
         Node node = new Node();
         _nodeCount++;
-        _nodes.Add(node);
         node.ObjectIndex = _nodeCount;
         node.IsLeaf = true;
         node.Box = box;
+        _nodes.Add(node);
         return _nodeCount;
     }
 
     private int AllocateInternalNode()
     {
         Node node = new Node();
-        _nodes.Add(node);
+        _nodeCount++;
         node.ObjectIndex = _nodeCount;
         node.IsLeaf = false;
-        _nodeCount++;
+        _nodes.Add(node);
         return _nodeCount;
     }
     
@@ -158,11 +197,12 @@ public class Tree
     public class Node
     {
         public AABB Box;
-        public int ObjectIndex;
-        public int ParentIndex;
-        public int Child1;
-        public int Child2;
+        public int ObjectIndex =-1;
+        public int ParentIndex =-1;
+        public int Child1 =-1;
+        public int Child2 =-1;
         public bool IsLeaf;
+        public bool Hit = false;
     }
 
     public struct AABB
@@ -194,6 +234,11 @@ public class Tree
             return other.Area();
         }
 
+        public static bool Intersects(AABB other, Ray ray, float range)
+        {
+            return other.Intersects(ray, range);
+        }
+        
         public bool Intersects(Ray ray, float range = 0)
         {
             float tmin = float.MinValue;

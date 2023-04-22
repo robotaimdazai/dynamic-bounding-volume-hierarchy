@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[ExecuteInEditMode]
 public class OverlapTester : MonoBehaviour
 {
     public float range = 10f;
@@ -11,6 +10,7 @@ public class OverlapTester : MonoBehaviour
     private void Update()
     {
         _ray= new Ray(transform.position, transform.forward);
+        /*
         foreach (DBHVComponent component in DBVHBase.AllComponents)
         {
             if (component.AABB.Intersects(_ray,range))
@@ -18,6 +18,9 @@ public class OverlapTester : MonoBehaviour
                 Debug.Log("Hit: "+component.name);
             }
         }
+        */
+       Tree.Raycast(DBVHBase.Tree, _ray, range);
+
     }
 
     private void OnDrawGizmos()

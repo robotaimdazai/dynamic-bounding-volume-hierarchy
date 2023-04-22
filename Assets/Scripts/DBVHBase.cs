@@ -9,10 +9,13 @@ public class DBVHBase : MonoBehaviour
     private static List<DBVHBase> _allDbhvComponents = new List<DBVHBase>();
     public static List<DBVHBase>  AllComponents => _allDbhvComponents;
 
+    public static Tree Tree = new();
+
     public virtual void OnEnable()
     {
         if(!_allDbhvComponents.Contains(this))
             _allDbhvComponents.Add(this);
+        
     }
     public virtual void OnDisable()
     {
