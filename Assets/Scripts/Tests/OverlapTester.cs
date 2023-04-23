@@ -9,7 +9,7 @@ public class OverlapTester : MonoBehaviour
     private Ray _ray;
     private void Update()
     {
-        _ray= new Ray(transform.position, transform.forward);
+        
         /*
         foreach (DBHVComponent component in DBVHBase.AllComponents)
         {
@@ -19,12 +19,14 @@ public class OverlapTester : MonoBehaviour
             }
         }
         */
-       Tree.Raycast(DBVHBase.Tree, _ray, range);
+       
 
     }
 
     private void OnDrawGizmos()
     {
+        _ray= new Ray(transform.position, transform.forward);
+        Tree.Raycast(DBVHBase.Tree, _ray, range);
         Gizmos.color = Color.blue;
         Gizmos.DrawLine(_ray.origin, _ray.origin + _ray.direction * range);
     }

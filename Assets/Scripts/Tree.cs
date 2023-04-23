@@ -12,7 +12,7 @@ public class Tree
     private int _rootIndex;
     private readonly int _nullIndex = -1;
     public List<Node> Nodes => _nodes;
-
+    public int RootIndex => _rootIndex;
     public void InsertLeaf(AABB box)
     {
         int leafIndex = AllocateLeafNode(box);
@@ -71,7 +71,6 @@ public class Tree
             _nodes[index].Box = _nodes[child1].Box.Union(_nodes[child2].Box);
             index = _nodes[index].ParentIndex;
         }
-
     }
 
     public static int Raycast(Tree tree, Ray ray, float range )
@@ -84,27 +83,32 @@ public class Tree
         if (_rootIndex == _nullIndex) return _nullIndex;
         Stack<int> stack = new();
         stack.Push(_rootIndex);
+        
+        //TODO: Remove this, only for debug
+        foreach (var node in _nodes)
+        {
+            node.IsHit = false;
+        }
+        
         while (stack.Count >0)
         {
             var index = stack.Pop();
-            _nodes[index].Hit = false;
             if (!AABB.Intersects(_nodes[index].Box, ray, range))
             {
                 continue;
             }
+            Debug.Log(index);
+            _nodes[index].IsHit = true;
             if (_nodes[index].IsLeaf)
             {
                 int objectIndex = _nodes[index].ObjectIndex;
-                Debug.Log(objectIndex);
+                return index;
             }
             else
             {
-               
                 stack.Push(_nodes[index].Child1);
                 stack.Push(_nodes[index].Child2);
             }
-            
-            _nodes[index].Hit = true;
         }
 
         return _nullIndex;
@@ -202,7 +206,7 @@ public class Tree
         public int Child1 =-1;
         public int Child2 =-1;
         public bool IsLeaf;
-        public bool Hit = false;
+        public bool IsHit = false;
     }
 
     public struct AABB
