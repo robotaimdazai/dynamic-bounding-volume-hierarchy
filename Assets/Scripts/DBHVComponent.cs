@@ -8,20 +8,26 @@ public class DBHVComponent : DBVHBase
    private RectTransform _rectTransform;
    private AABB _aabb = new();
    private Vector3[] _corners = new Vector3[4];
+   private int _index = -1;
    public AABB AABB => _aabb;
 
    private void Start()
    {
       _canvas = GetComponent<Canvas>();
       _rectTransform = GetComponent<RectTransform>();
-      SetAABB();
-      Tree.InsertLeaf(_aabb);
+      _index = gameObject.GetInstanceID();
+      SetAABB(); 
+      Tree.InsertLeaf(_index,_aabb);
    }
-   
-   private void Update()
+
+   [ContextMenu("UpdateTree")]
+   public void UpdateTree()
    {
-      //SetAABB();
+      SetAABB();
+      Tree.Remove(_index);
+      Tree.InsertLeaf(_index,_aabb);
    }
+
    private void SetAABB()
    {
       _rectTransform.GetWorldCorners(_corners);

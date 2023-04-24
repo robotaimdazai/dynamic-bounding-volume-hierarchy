@@ -7,21 +7,21 @@ using UnityEngine;
 
 public class Tree
 {
-    private  List<Node> _nodes = new();
-    private int _nodeCount = -1;
+    private  Dictionary<int,Node> _nodes = new();
     private int _rootIndex;
     private readonly int _nullIndex = -1;
-    public List<Node> Nodes => _nodes;
+    public Dictionary<int,Node> Nodes => _nodes;
     public int RootIndex => _rootIndex;
-    public void InsertLeaf(AABB box)
+    
+    public int InsertLeaf(int objectIndex, AABB box)
     {
-        int leafIndex = AllocateLeafNode(box);
-        if (_nodeCount == 0)
+        int leafIndex = AllocateLeafNode(objectIndex,box);
+        if (_nodes.Count == 1)
         {
             _rootIndex = leafIndex;
-            return;
+            return leafIndex;
         }
-        
+
         //1, Find best sibling for new leaf
         //Branch and bound
         int bestSibling = _rootIndex;
@@ -62,16 +62,70 @@ public class Tree
         }
 
         //3, Traverse the tree upwards refitting AABBs
+        int parentIndex = _nodes[leafIndex].ParentIndex;
+        RefitAncestors(parentIndex);
+       
+        return leafIndex;
+    }
 
-        int index = _nodes[leafIndex].ParentIndex;
-        while (index != _nullIndex)
+    public void Remove(int index)
+    {
+        if (index == _nullIndex || !_nodes.ContainsKey(index) || index == _rootIndex) return;
+        int parent = _nodes[index].ParentIndex;
+        int child1 = _nodes[parent].Child1;
+        int child2 = _nodes[parent].Child2;
+        int sibling = child1;
+        if (_nodes[parent].Child1 == index)
         {
-            int child1 = _nodes[index].Child1;
-            int child2 = _nodes[index].Child2;
-            _nodes[index].Box = _nodes[child1].Box.Union(_nodes[child2].Box);
-            index = _nodes[index].ParentIndex;
+            //child 2 is remaining
+            sibling = child2;
+
+        }
+        else if (_nodes[parent].Child2 == index)
+        {
+            //child 1 is remaining   
+            sibling = child1;
+        }
+        
+        //updating grandParent
+        //get grandParent 
+        var grandParent = _nodes[parent].ParentIndex;
+        if (grandParent == -1)
+        {
+            //grandParent is root
+            _rootIndex = sibling;
+        }
+        else
+        {
+            if (parent == _nodes[grandParent].Child1)
+            {
+                _nodes[grandParent].Child1 = _nodes[sibling].ObjectIndex;
+            }
+            else if (parent == _nodes[grandParent].Child2)
+            {
+                _nodes[grandParent].Child2 = _nodes[sibling].ObjectIndex;
+            }
+        }
+        
+        _nodes.Remove(parent);
+        _nodes.Remove(index);
+        
+        _nodes[sibling].ParentIndex = grandParent;
+        RefitAncestors(_nodes[sibling].ParentIndex);
+        
+    }
+
+    public void RefitAncestors(int parentIndex)
+    {
+        while (parentIndex != _nullIndex)
+        {
+            int child1 = _nodes[parentIndex].Child1;
+            int child2 = _nodes[parentIndex].Child2;
+            _nodes[parentIndex].Box = _nodes[child1].Box.Union(_nodes[child2].Box);
+            parentIndex = _nodes[parentIndex].ParentIndex;
         }
     }
+    
 
     public static int Raycast(Tree tree, Ray ray, float range )
     {
@@ -85,7 +139,7 @@ public class Tree
         stack.Push(_rootIndex);
         
         //TODO: Remove this, only for debug
-        foreach (var node in _nodes)
+        foreach (var node in _nodes.Values)
         {
             node.IsHit = false;
         }
@@ -114,25 +168,28 @@ public class Tree
         return _nullIndex;
     }
 
-    private int AllocateLeafNode(AABB box)
+    private int AllocateLeafNode(int objectIndex, AABB box)
     {
-        Node node = new Node();
-        _nodeCount++;
-        node.ObjectIndex = _nodeCount;
-        node.IsLeaf = true;
-        node.Box = box;
-        _nodes.Add(node);
-        return _nodeCount;
+        if (!_nodes.ContainsKey(objectIndex))
+        {
+            _nodes[objectIndex] = new Node();
+        }
+        _nodes[objectIndex].Box = box;
+        _nodes[objectIndex].ObjectIndex = objectIndex;
+        _nodes[objectIndex].IsLeaf = true;
+        return objectIndex;
     }
 
     private int AllocateInternalNode()
     {
-        Node node = new Node();
-        _nodeCount++;
-        node.ObjectIndex = _nodeCount;
-        node.IsLeaf = false;
-        _nodes.Add(node);
-        return _nodeCount;
+        int objectIndex = Guid.NewGuid().GetHashCode();
+        Node node = new Node
+        {
+            IsLeaf = false,
+            ObjectIndex = objectIndex
+        };
+        _nodes[objectIndex] = node;
+        return objectIndex;
     }
     
     private int PickBest(int leaf)
@@ -145,6 +202,7 @@ public class Tree
         while (priorityQueue.Count>0)
         {
             var index = priorityQueue.Dequeue();
+            if(index == _nullIndex) continue;
             var node = _nodes[index];
             var child1 = node.Child1;
             var child2 = node.Child2;
@@ -181,7 +239,7 @@ public class Tree
     public float ComputeCost()
     {
         float cost = 0f;
-        for (int i = 0; i < _nodeCount; i++)
+        for (int i = 0; i < _nodes.Count; i++)
         {
             if (_nodes[i].IsLeaf == false)
             {

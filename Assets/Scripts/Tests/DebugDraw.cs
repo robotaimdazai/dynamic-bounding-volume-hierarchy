@@ -8,8 +8,7 @@ public class DebugDraw : MonoBehaviour
 {
     private void OnDrawGizmos()
     {
-        int index = 0;
-        foreach (var node in DBVHBase.Tree.Nodes)
+        foreach (var node in DBVHBase.Tree.Nodes.Values)
         {
             GUIStyle style = new GUIStyle();
             style.normal.textColor = Color.white;
@@ -28,7 +27,7 @@ public class DebugDraw : MonoBehaviour
                 style.normal.textColor = Color.red;
             }
 
-            if (index == DBVHBase.Tree.RootIndex)
+            if (node.ObjectIndex == DBVHBase.Tree.RootIndex)
             {
                 multiplier = 2.1f;
                 Gizmos.color =Color.black;
@@ -36,9 +35,8 @@ public class DebugDraw : MonoBehaviour
 
             float xSize = (center.x - node.Box.Min.x)*multiplier;
             float ySize = (node.Box.Max.y - center.y)*multiplier;
-            Handles.Label(center,index.ToString(),style);
+            Handles.Label(center,node.ObjectIndex.ToString(),style);
             Gizmos.DrawWireCube(center,new Vector3(xSize,ySize));
-            index++;
         }
     }
 }
