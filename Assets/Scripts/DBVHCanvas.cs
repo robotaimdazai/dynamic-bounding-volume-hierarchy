@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-public class DBHVComponent : DBVHBase
+public class DBVHCanvas : DBVHBase
 {
    private Canvas _canvas;
    private RectTransform _rectTransform;
@@ -13,6 +13,7 @@ public class DBHVComponent : DBVHBase
    private Vector3 _cachedPos;
    private Vector3 _cachedRot;
    private Vector3 _cachedScale;
+   private Vector3 _tolerance = new Vector3(0.1f,0.1f,0.1f);
 
    private void Start()
    {
@@ -35,12 +36,15 @@ public class DBHVComponent : DBVHBase
    [ContextMenu("UpdateTree")]
    private void UpdateTree()
    {
-      if (_cachedPos == _cachedTransform.position &&
-          _cachedRot == _cachedTransform.rotation.eulerAngles &&
-          _cachedScale == _cachedTransform.localScale)
+      bool samePos = AlmostEqual(_cachedPos, _cachedTransform.position, _tolerance);
+      bool sameRot = AlmostEqual(_cachedRot, _cachedTransform.rotation.eulerAngles, _tolerance);
+      bool sameScale = AlmostEqual(_cachedScale, _cachedTransform.localScale, _tolerance);
+      
+      if (samePos && sameRot && sameScale)
       {
          return;
       }
+      
       SetAABB();
       Tree.Remove(_index);
       Tree.InsertLeaf(_index,_aabb);
@@ -48,7 +52,6 @@ public class DBHVComponent : DBVHBase
       _cachedRot = _cachedTransform.rotation.eulerAngles;
       _cachedScale = _cachedTransform.localScale;
       
-      Debug.Log("yo");
    }
 
    private void SetAABB()

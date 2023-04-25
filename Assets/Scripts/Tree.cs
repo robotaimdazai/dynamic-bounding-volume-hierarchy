@@ -13,126 +13,7 @@ public class Tree
     public Dictionary<int,Node> Nodes => _nodes;
     public int RootIndex => _rootIndex;
     
-    public int InsertLeaf(int objectIndex, AABB box)
-    {
-        int leafIndex = AllocateLeafNode(objectIndex,box);
-        if (_nodes.Count == 1)
-        {
-            _rootIndex = leafIndex;
-            return leafIndex;
-        }
-
-        //1, Find best sibling for new leaf
-        //Branch and bound
-        int bestSibling = _rootIndex;
-        bestSibling = PickBest(leafIndex);
-        
-        //2, Create a new parent
-
-        int sibling = bestSibling;
-        int oldParent = _nodes[sibling].ParentIndex;
-        int newParent = AllocateInternalNode();
-        _nodes[newParent].ParentIndex = oldParent;
-        _nodes[newParent].Box = box.Union(_nodes[sibling].Box);
-        if (oldParent != _nullIndex)
-        {
-            // sibling was not root
-            if (_nodes[oldParent].Child1 == sibling)
-            {
-                _nodes[oldParent].Child1 = newParent;
-            }
-            else
-            {
-                _nodes[oldParent].Child2 = newParent;
-            }
-
-            _nodes[newParent].Child1 = sibling;
-            _nodes[newParent].Child2 = leafIndex;
-            _nodes[sibling].ParentIndex = newParent;
-            _nodes[leafIndex].ParentIndex = newParent;
-        }
-        else
-        {
-            //the sibling was root
-            _nodes[newParent].Child1 = sibling;
-            _nodes[newParent].Child2 = leafIndex;
-            _nodes[sibling].ParentIndex = newParent;
-            _nodes[leafIndex].ParentIndex = newParent;
-            _rootIndex = newParent;
-        }
-
-        //3, Traverse the tree upwards refitting AABBs
-        int parentIndex = _nodes[leafIndex].ParentIndex;
-        RefitAncestors(parentIndex);
-       
-        return leafIndex;
-    }
-
-    public void Remove(int index)
-    {
-        if (index == _nullIndex || !_nodes.ContainsKey(index) || index == _rootIndex) return;
-        int parent = _nodes[index].ParentIndex;
-        int child1 = _nodes[parent].Child1;
-        int child2 = _nodes[parent].Child2;
-        int sibling = child1;
-        if (_nodes[parent].Child1 == index)
-        {
-            //child 2 is remaining
-            sibling = child2;
-
-        }
-        else if (_nodes[parent].Child2 == index)
-        {
-            //child 1 is remaining   
-            sibling = child1;
-        }
-        
-        //updating grandParent
-        //get grandParent 
-        var grandParent = _nodes[parent].ParentIndex;
-        if (grandParent == -1)
-        {
-            //grandParent is root
-            _rootIndex = sibling;
-        }
-        else
-        {
-            if (parent == _nodes[grandParent].Child1)
-            {
-                _nodes[grandParent].Child1 = _nodes[sibling].ObjectIndex;
-            }
-            else if (parent == _nodes[grandParent].Child2)
-            {
-                _nodes[grandParent].Child2 = _nodes[sibling].ObjectIndex;
-            }
-        }
-        
-        _nodes.Remove(parent);
-        _nodes.Remove(index);
-        
-        _nodes[sibling].ParentIndex = grandParent;
-        RefitAncestors(_nodes[sibling].ParentIndex);
-        
-    }
-
-    public void RefitAncestors(int parentIndex)
-    {
-        while (parentIndex != _nullIndex)
-        {
-            int child1 = _nodes[parentIndex].Child1;
-            int child2 = _nodes[parentIndex].Child2;
-            _nodes[parentIndex].Box = _nodes[child1].Box.Union(_nodes[child2].Box);
-            parentIndex = _nodes[parentIndex].ParentIndex;
-        }
-    }
-    
-
-    public static int Raycast(Tree tree, Ray ray, float range )
-    {
-       return tree.RayCast(ray, range);
-    }
-
-    private int RayCast(Ray ray, float range)
+    private int RayCast(Ray ray, float range) 
     {
         if (_rootIndex == _nullIndex) return _nullIndex;
         Stack<int> stack = new();
@@ -165,7 +46,7 @@ public class Tree
             }
         }
 
-        return _nullIndex;
+        return _nullIndex; 
     }
 
     private int AllocateLeafNode(int objectIndex, AABB box)
@@ -235,7 +116,144 @@ public class Tree
         
         return sBest;
     }
+    
+    private void RefitAncestors(int parentIndex)
+    {
+        while (parentIndex != _nullIndex)
+        {
+            int child1 = _nodes[parentIndex].Child1;
+            int child2 = _nodes[parentIndex].Child2;
+            _nodes[parentIndex].Box = _nodes[child1].Box.Union(_nodes[child2].Box);
+            parentIndex = _nodes[parentIndex].ParentIndex;
+        }
+    }
 
+    public static void InsertLeaf(Tree tree, int objectIndex, AABB box)
+    {
+        tree.InsertLeaf(objectIndex, box);
+    }
+    public static void Remove(Tree tree, int index)
+    {
+        tree.Remove(index);
+    }
+    
+    public static int Raycast(Tree tree, Ray ray, float range )
+    {
+        return tree.RayCast(ray, range);
+    }
+    
+    public static float ComputeCost(Tree tree)
+    {
+        return tree.ComputeCost();
+    }
+    
+    public void InsertLeaf(int objectIndex, AABB box)
+    {
+        int leafIndex = AllocateLeafNode(objectIndex,box);
+        if (_nodes.Count == 1)
+        {
+            _rootIndex = leafIndex;
+            return ;
+        }
+
+        //1, Find best sibling for new leaf
+        //Branch and bound
+        int bestSibling = _rootIndex;
+        bestSibling = PickBest(leafIndex);
+        
+        //2, Create a new parent
+
+        int sibling = bestSibling;
+        int oldParent = _nodes[sibling].ParentIndex;
+        int newParent = AllocateInternalNode();
+        _nodes[newParent].ParentIndex = oldParent;
+        _nodes[newParent].Box = box.Union(_nodes[sibling].Box);
+        if (oldParent != _nullIndex)
+        {
+            // sibling was not root
+            if (_nodes[oldParent].Child1 == sibling)
+            {
+                _nodes[oldParent].Child1 = newParent;
+            }
+            else
+            {
+                _nodes[oldParent].Child2 = newParent;
+            }
+
+            _nodes[newParent].Child1 = sibling;
+            _nodes[newParent].Child2 = leafIndex;
+            _nodes[sibling].ParentIndex = newParent;
+            _nodes[leafIndex].ParentIndex = newParent;
+        }
+        else
+        {
+            //the sibling was root
+            _nodes[newParent].Child1 = sibling;
+            _nodes[newParent].Child2 = leafIndex;
+            _nodes[sibling].ParentIndex = newParent;
+            _nodes[leafIndex].ParentIndex = newParent;
+            _rootIndex = newParent;
+        }
+
+        //3, Traverse the tree upwards refitting AABBs
+        int parentIndex = _nodes[leafIndex].ParentIndex;
+        RefitAncestors(parentIndex);
+        
+    }
+   
+    public void Remove(int index)
+    {
+        if (index == _nullIndex || !_nodes.ContainsKey(index) || index == _rootIndex) return;
+        int parent = _nodes[index].ParentIndex;
+        int child1 = _nodes[parent].Child1;
+        int child2 = _nodes[parent].Child2;
+        int sibling = child1;
+        if (_nodes[parent].Child1 == index)
+        {
+            //child 2 is remaining
+            sibling = child2;
+
+        }
+        else if (_nodes[parent].Child2 == index)
+        {
+            //child 1 is remaining   
+            sibling = child1;
+        }
+        
+        //updating grandParent
+        //get grandParent 
+        var grandParent = _nodes[parent].ParentIndex;
+        if (grandParent == _nullIndex)
+        {
+            //grandParent is root
+            _rootIndex = sibling;
+        }
+        else
+        {
+            if (parent == _nodes[grandParent].Child1)
+            {
+                _nodes[grandParent].Child1 = _nodes[sibling].ObjectIndex;
+            }
+            else if (parent == _nodes[grandParent].Child2)
+            {
+                _nodes[grandParent].Child2 = _nodes[sibling].ObjectIndex;
+            }
+        }
+        
+        _nodes.Remove(parent);
+        _nodes.Remove(index);
+        
+        _nodes[sibling].ParentIndex = grandParent;
+        if (grandParent == -1)
+        {
+            //of the grandParent was root then, parent should be null, as sibling is the new root
+            _nodes[sibling].ParentIndex = _nullIndex;
+        }
+
+        RefitAncestors(_nodes[sibling].ParentIndex);
+        
+    }
+    
     public float ComputeCost()
     {
         float cost = 0f;
@@ -248,11 +266,6 @@ public class Tree
         }
 
         return cost;
-    }
-
-    public static float ComputeCost(Tree tree)
-    {
-        return tree.ComputeCost();
     }
 }
 
@@ -284,13 +297,7 @@ public class Tree
         {
             return a.Union(b);
         }
-
-        public float Area()
-        {
-            Vector3 d = Max - Min;
-            return 2.0f * (d.x * d.y + d.y * d.z + d.z * d.x);
-        }
-
+        
         public static float Area(AABB other)
         {
             return other.Area();
@@ -300,7 +307,11 @@ public class Tree
         {
             return other.Intersects(ray, range);
         }
-        
+        public float Area()
+        {
+            Vector3 d = Max - Min;
+            return 2.0f * (d.x * d.y + d.y * d.z + d.z * d.x);
+        }
         public bool Intersects(Ray ray, float range = 0)
         {
             float tmin = float.MinValue;
