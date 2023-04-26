@@ -13,7 +13,10 @@ public class DebugDraw : MonoBehaviour
             GUIStyle style = new GUIStyle();
             style.normal.textColor = Color.white;
             Gizmos.color =Color.blue;
-            Vector3 center = new Vector3((node.Box.Min.x + node.Box.Max.x) / 2, (node.Box.Min.y + node.Box.Max .y) / 2, 0);
+            Vector3 center = new Vector3(
+                (node.Box.Min.x + node.Box.Max.x) / 2,
+                (node.Box.Min.y + node.Box.Max .y) / 2,
+                (node.Box.Min.z + node.Box.Max.z) / 2);
             float multiplier = 2f;
             if (node.IsLeaf)
             {
@@ -35,8 +38,9 @@ public class DebugDraw : MonoBehaviour
 
             float xSize = (center.x - node.Box.Min.x)*multiplier;
             float ySize = (node.Box.Max.y - center.y)*multiplier;
+            float zSize = (node.Box.Max.z - center.z)*multiplier;
             Handles.Label(center,node.ObjectIndex.ToString(),style);
-            Gizmos.DrawWireCube(center,new Vector3(xSize,ySize));
+            Gizmos.DrawWireCube(center,new Vector3(xSize,ySize,zSize));
         }
     }
 }

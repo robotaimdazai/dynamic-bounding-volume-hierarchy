@@ -199,7 +199,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb3556a4cdc5b1947a40a94df959c3ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  range: 0
+  range: 1000
 --- !u!135 &602761418
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -482,7 +482,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 2.97, y: 5.21}
+  m_AnchoredPosition: {x: 30.96, y: 20.42}
   m_SizeDelta: {x: 4, y: 4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &963194225
