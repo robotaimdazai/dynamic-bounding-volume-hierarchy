@@ -24,7 +24,7 @@ public class DBVHCanvas : DBVHBase
       _cachedPos = _cachedTransform.position;
       _cachedRot = _cachedTransform.rotation.eulerAngles;
       _cachedScale = _cachedTransform.localScale;
-      SetAABV2();
+      SetAABB();
       Tree.InsertLeaf(_index,_aabb);
    }
 
@@ -45,7 +45,7 @@ public class DBVHCanvas : DBVHBase
          return;
       }
 
-      SetAABV2();
+      SetAABB();
       Tree.Remove(_index);
       Tree.InsertLeaf(_index,_aabb);
       _cachedPos = _cachedTransform.position;
@@ -57,40 +57,44 @@ public class DBVHCanvas : DBVHBase
    private void SetAABB()
    {
       _rectTransform.GetWorldCorners(_corners);
-      float width = _corners[3].x - _corners[0].x;
-      float height = _corners[1].y - _corners[1].y;
-      float depth = Mathf.Sqrt(width * width + height * height);
-      var boxMax = _corners[2] + Vector3.forward * depth;
-      _aabb.Min = _corners[0];
-      _aabb.Max = boxMax;
+      float xMin = Mathf.Infinity;
+      float xMax = Mathf.NegativeInfinity;
+      float yMin = Mathf.Infinity;
+      float yMax = Mathf.NegativeInfinity;
+      float zMin = Mathf.Infinity;
+      float zMax = Mathf.NegativeInfinity;
+      for (int i = 0; i < 4; i++)
+      {
+         if (_corners[i].x < xMin)
+         {
+            xMin = _corners[i].x;
+         }
+         if (_corners[i].x > xMax)
+         {
+            xMax = _corners[i].x;
+         }
+         if (_corners[i].y < yMin)
+         {
+            yMin = _corners[i].y;
+         }
+         if (_corners[i].y > yMax)
+         {
+            yMax = _corners[i].y;
+         }
+         if (_corners[i].z < zMin)
+         {
+            zMin = _corners[i].z;
+         }
+         if (_corners[i].z > zMax)
+         {
+            zMax = _corners[i].z;
+         }
+         
+      }
+      var min = new Vector3(xMin, yMin, zMin);
+      var max = new Vector3(xMax, yMax, zMax);
+      _aabb.Min = min;
+      _aabb.Max = max;
    }
-
-   private void SetAABV2()
-   {
-      var rect = _rectTransform.rect;
-      float canvasWidth = rect.width;
-      float canvasHeight = rect.height;
-      float depth = Mathf.Sqrt(canvasWidth * canvasWidth + canvasHeight * canvasHeight);
-      Vector3 canvasPosition = _rectTransform.localPosition;
-      Bounds canvasBounds = new Bounds(canvasPosition, Vector3.zero);
-      Vector3 corner1 = canvasPosition + new Vector3(-depth / 2f, depth / 2f, -depth/2f);
-      Vector3 corner2 = canvasPosition + new Vector3(depth / 2f, depth / 2f, -depth/2f);
-      Vector3 corner3 = canvasPosition + new Vector3(-depth / 2f, -depth / 2f, -depth/2f);
-      Vector3 corner4 = canvasPosition + new Vector3(depth / 2f, -depth / 2f, -depth/2f);
-      Vector3 corner5 = corner1 + new Vector3(0f, 0f, depth );
-      Vector3 corner6 = corner2 + new Vector3(0f, 0f, depth );
-      Vector3 corner7 = corner3 + new Vector3(0f, 0f, depth );
-      Vector3 corner8 = corner4 + new Vector3(0f, 0f, depth );
-      canvasBounds.Encapsulate(corner1);
-      canvasBounds.Encapsulate(corner2);
-      canvasBounds.Encapsulate(corner3);
-      canvasBounds.Encapsulate(corner4);
-      canvasBounds.Encapsulate(corner5);
-      canvasBounds.Encapsulate(corner6);
-      canvasBounds.Encapsulate(corner7);
-      canvasBounds.Encapsulate(corner8);
-
-      _aabb.Min = canvasBounds.min;
-      _aabb.Max = canvasBounds.max;
-   }
+   
 }
