@@ -25,7 +25,7 @@ public class DBVHCanvas : DBVHBase
       _cachedRot = _cachedTransform.rotation.eulerAngles;
       _cachedScale = _cachedTransform.localScale;
       SetAABB();
-      Tree.InsertLeaf(_index,_aabb);
+      Tree.InsertLeaf(_index,_aabb,this);
    }
 
    private void Update()
@@ -36,9 +36,9 @@ public class DBVHCanvas : DBVHBase
    [ContextMenu("UpdateTree")]
    private void UpdateTree()
    {
-      bool samePos = AlmostEqual(_cachedPos, _cachedTransform.position, _tolerance);
-      bool sameRot = AlmostEqual(_cachedRot, _cachedTransform.rotation.eulerAngles, _tolerance);
-      bool sameScale = AlmostEqual(_cachedScale, _cachedTransform.localScale, _tolerance);
+      bool samePos = DBVHUtils.AlmostEqual(_cachedPos, _cachedTransform.position, _tolerance);
+      bool sameRot = DBVHUtils.AlmostEqual(_cachedRot, _cachedTransform.rotation.eulerAngles, _tolerance);
+      bool sameScale = DBVHUtils.AlmostEqual(_cachedScale, _cachedTransform.localScale, _tolerance);
       
       if (samePos && sameRot && sameScale)
       {
@@ -47,7 +47,7 @@ public class DBVHCanvas : DBVHBase
 
       SetAABB();
       Tree.Remove(_index);
-      Tree.InsertLeaf(_index,_aabb);
+      Tree.InsertLeaf(_index,_aabb,this);
       _cachedPos = _cachedTransform.position;
       _cachedRot = _cachedTransform.rotation.eulerAngles;
       _cachedScale = _cachedTransform.localScale;

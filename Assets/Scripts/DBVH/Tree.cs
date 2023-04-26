@@ -8,6 +8,7 @@ using UnityEngine;
 public class Tree
 {
     private  Dictionary<int,Node> _nodes = new();
+    private  Dictionary<int,DBVHBase> _components = new();
     private int _rootIndex;
     private readonly int _nullIndex = -1;
     public Dictionary<int,Node> Nodes => _nodes;
@@ -37,7 +38,12 @@ public class Tree
             {
                 continue;
             }
-            
+
+            if (_nodes[index].IsLeaf && !_components[index].gameObject.activeSelf)
+            {
+                continue;
+            }
+
             //TODO remove this, only for debugging
             Debug.Log(index);
             var thisNode = _nodes[index];
@@ -159,9 +165,9 @@ public class Tree
         }
     }
 
-    public static void InsertLeaf(Tree tree, int objectIndex, AABB box)
+    public static void InsertLeaf(Tree tree, int objectIndex, AABB box, DBVHBase component)
     {
-        tree.InsertLeaf(objectIndex, box);
+        tree.InsertLeaf(objectIndex, box, component);
     }
     public static void Remove(Tree tree, int index)
     {
@@ -178,9 +184,10 @@ public class Tree
         return tree.ComputeCost();
     }
     
-    public void InsertLeaf(int objectIndex, AABB box)
+    public void InsertLeaf(int objectIndex, AABB box,DBVHBase component)
     {
         int leafIndex = AllocateLeafNode(objectIndex,box);
+        _components[objectIndex] = component;
         var leafNode = _nodes[leafIndex];
         if (_nodes.Count == 1)
         {
@@ -286,6 +293,7 @@ public class Tree
         
         _nodes.Remove(parent);
         _nodes.Remove(index);
+        _components.Remove(index);
 
         var siblingNode = _nodes[sibling];
         siblingNode.ParentIndex = grandParent;
