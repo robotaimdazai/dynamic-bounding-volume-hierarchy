@@ -79,7 +79,7 @@ namespace DBVH
          aabb.Max = max;
          return aabb;
       }
-      private static Bounds CalculateBounds(Transform transform)
+      public static Bounds CalculateBounds(Transform transform)
       {
          Bounds bounds = new Bounds(transform.position, Vector3.zero);
          foreach (Transform child in transform)
@@ -89,6 +89,36 @@ namespace DBVH
          }
          return bounds;
       }
+      
+      public static Bounds GetBounds(Transform transform)
+      {
+         // Get the local corners of the cube
+         Vector3[] corners = new Vector3[8];
+         corners[0] = new Vector3(-0.5f, -0.5f, -0.5f);
+         corners[1] = new Vector3(-0.5f, -0.5f, 0.5f);
+         corners[2] = new Vector3(-0.5f, 0.5f, -0.5f);
+         corners[3] = new Vector3(-0.5f, 0.5f, 0.5f);
+         corners[4] = new Vector3(0.5f, -0.5f, -0.5f);
+         corners[5] = new Vector3(0.5f, -0.5f, 0.5f);
+         corners[6] = new Vector3(0.5f, 0.5f, -0.5f);
+         corners[7] = new Vector3(0.5f, 0.5f, 0.5f);
+
+         // Transform the corners to world space
+         for (int i = 0; i < 8; i++)
+         {
+            corners[i] = transform.TransformPoint(corners[i]);
+         }
+
+         // Calculate the bounds based on the transformed corners
+         Bounds bounds = new Bounds(corners[0], Vector3.zero);
+         for (int i = 1; i < 8; i++)
+         {
+            bounds.Encapsulate(corners[i]);
+         }
+
+         return bounds;
+      }
+      
       public static AABB GetAABBFromTransform(Transform transform)
       {
          var bounds =CalculateBounds(transform);

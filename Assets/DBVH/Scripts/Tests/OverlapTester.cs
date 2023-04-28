@@ -12,7 +12,7 @@ namespace DBVH
             if(!DBVHBase.Debug) return;
             _ray= new Ray(transform.position, transform.forward);
             BinaryTree.Raycast(DBVHBase.BinaryTree, _ray);
-            Gizmos.color = Color.blue;
+            Gizmos.color = Color.white;
             Gizmos.DrawLine(_ray.origin, _ray.origin + _ray.direction * range);
         }
     }

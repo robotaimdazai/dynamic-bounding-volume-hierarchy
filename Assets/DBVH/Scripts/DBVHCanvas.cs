@@ -13,13 +13,23 @@ namespace DBVH
          //This is how you should normally init
          //1, Set AABB
          //2, Insert to Binary tree
-         AABB = DBVHUtils.GetAABBFromRectTransform(_rectTransform);
+         SetAABB();
          BinaryTree.InsertLeaf(Index,AABB,this);
       }
       private void Update()
       {
          UpdateTree();
       }
+
+      private void SetAABB()
+      {
+         AABB = DBVHUtils.GetAABBFromRectTransform(_rectTransform);
+         if (DBVHUtils.AlmostEqual(AABB.Max, AABB.Min, _tolerance))
+         {
+            AABB = DBVHUtils.GetAABBFromTransform(CachedTransform);
+         }
+      }
+
       private void UpdateTree()
       {
          bool samePos = DBVHUtils.AlmostEqual(CachedPos, CachedTransform.position, _tolerance);
@@ -30,11 +40,7 @@ namespace DBVH
          {
             return;
          }
-         AABB = DBVHUtils.GetAABBFromRectTransform(_rectTransform);
-         if (DBVHUtils.AlmostEqual(AABB.Max, AABB.Min, _tolerance))
-         {
-            AABB = DBVHUtils.GetAABBFromTransform(CachedTransform);
-         }
+         SetAABB();
          BinaryTree.Remove(Index);
          BinaryTree.InsertLeaf(Index,AABB,this);
          CachedPos = CachedTransform.position;
