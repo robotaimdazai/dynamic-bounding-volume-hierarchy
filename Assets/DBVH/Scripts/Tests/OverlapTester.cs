@@ -9,7 +9,7 @@ namespace DBVH
         private Ray _ray;
         private void OnDrawGizmos()
         {
-            if(!DBVHBase.Debug) return;
+            if(!DBVHBase.DebugMode) return;
             _ray= new Ray(transform.position, transform.forward);
             BinaryTree.Raycast(DBVHBase.BinaryTree, _ray);
             Gizmos.color = Color.white;

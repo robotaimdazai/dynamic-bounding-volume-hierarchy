@@ -22,7 +22,7 @@ namespace DBVH
             stack.Push(_rootIndex);
             
             //This code is only for debugging, either remove in production or set Debug to false
-            if (DBVHBase.Debug)
+            if (DBVHBase.DebugMode)
             {
                 Dictionary<int, Node> allNodes = new Dictionary<int, Node>(_nodes);
                 foreach (var index in _nodes.Keys)
@@ -45,7 +45,7 @@ namespace DBVH
                     continue;
                 }
 
-                if (DBVHBase.Debug)
+                if (DBVHBase.DebugMode)
                 {
                     _nodes[index].IsHit = true;
                 }

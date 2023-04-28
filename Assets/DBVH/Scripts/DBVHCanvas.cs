@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace DBVH
@@ -18,34 +19,21 @@ namespace DBVH
       }
       private void Update()
       {
-         UpdateTree();
+         if (IfAnyTransformHasChanged())
+         {
+            UpdateTree();
+            SetTransformHasChangedForAll(false);
+         }
       }
-
       private void SetAABB()
       {
          AABB = DBVHUtils.GetAABBFromRectTransform(_rectTransform);
-         if (DBVHUtils.AlmostEqual(AABB.Max, AABB.Min, _tolerance))
-         {
-            AABB = DBVHUtils.GetAABBFromTransform(CachedTransform);
-         }
       }
-
       private void UpdateTree()
       {
-         bool samePos = DBVHUtils.AlmostEqual(CachedPos, CachedTransform.position, _tolerance);
-         bool sameRot = DBVHUtils.AlmostEqual(CachedRot, CachedTransform.rotation.eulerAngles, _tolerance);
-         bool sameScale = DBVHUtils.AlmostEqual(CachedScale, CachedTransform.localScale, _tolerance);
-      
-         if (samePos && sameRot && sameScale)
-         {
-            return;
-         }
          SetAABB();
          BinaryTree.Remove(Index);
          BinaryTree.InsertLeaf(Index,AABB,this);
-         CachedPos = CachedTransform.position;
-         CachedRot = CachedTransform.rotation.eulerAngles;
-         CachedScale = CachedTransform.localScale;
       }
    }
 }

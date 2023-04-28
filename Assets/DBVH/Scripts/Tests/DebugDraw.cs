@@ -8,7 +8,7 @@ namespace DBVH
     {
         private void OnDrawGizmos()
         {
-            if(!DBVHBase.Debug) return;
+            if(!DBVHBase.DebugMode) return;
             foreach (var node in DBVHBase.BinaryTree.Nodes.Values)
             {
                 GUIStyle style = new GUIStyle();

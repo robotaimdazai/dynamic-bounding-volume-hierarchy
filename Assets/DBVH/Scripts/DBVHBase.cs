@@ -8,23 +8,37 @@ namespace DBVH
 {
    public class DBVHBase : MonoBehaviour
    {
-      public static bool Debug = true; // set this to false in production
+      public static bool DebugMode = true; // set this to false in production
       public static BinaryTree BinaryTree = new();
       protected AABB AABB = new();
       protected int Index = -1;
       protected Transform CachedTransform;
-      protected Vector3 CachedPos; 
-      protected Vector3 CachedRot; 
-      protected Vector3 CachedScale;
       protected virtual void Start()
       {
          Index = gameObject.GetInstanceID();
          CachedTransform = transform;
-         CachedPos = CachedTransform.position;
-         CachedRot = CachedTransform.rotation.eulerAngles;
-         CachedScale = CachedTransform.localScale;
+         SetTransformHasChangedForAll(false);
+      }
+      protected virtual void SetTransformHasChangedForAll(bool value)
+      {
+         CachedTransform.hasChanged = false;
+         foreach (Transform child in CachedTransform)
+         {
+            child.hasChanged = value;
+         }
+      }
+      protected virtual bool IfAnyTransformHasChanged()
+      {
+         if (CachedTransform.hasChanged) return true;
+         foreach (Transform child in CachedTransform)
+         {
+            if (child.hasChanged) return true;
+         }
+         return false;
       }
    }
+   
+   
    public static class DBVHUtils
    {
       public static bool AlmostEqual(Vector3 v1, Vector3 v2, Vector3 precision)
@@ -77,6 +91,42 @@ namespace DBVH
          AABB aabb = new AABB();
          aabb.Min = min;
          aabb.Max = max;
+
+         Vector3 childMin = min;
+         Vector3 childMax = max;
+         foreach (RectTransform child in rectTransform)
+         {
+            AABB thisAABB = new AABB();
+            thisAABB =GetAABBFromRectTransform(child);
+            if (thisAABB.Min.x < childMin.x)
+            {
+               childMin.x = thisAABB.Min.x;
+            }
+            if (thisAABB.Min.y < childMin.y)
+            {
+               childMin.y = thisAABB.Min.y;
+            }
+            if (thisAABB.Min.z < childMin.z)
+            {
+               childMin.z = thisAABB.Min.z;
+            }
+            //max
+            if (thisAABB.Max.x > childMax.x)
+            {
+               childMax.x = thisAABB.Max.x;
+            }
+            if (thisAABB.Max.y > childMax.y)
+            {
+               childMax.y = thisAABB.Max.y;
+            }
+            if (thisAABB.Max.z > childMax.z)
+            {
+               childMax.z = thisAABB.Max.z;
+            }
+         }
+
+         aabb.Min = childMin;
+         aabb.Max = childMax;
          return aabb;
       }
       public static Bounds CalculateBounds(Transform transform)
