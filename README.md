@@ -4,7 +4,7 @@
 </head>
 <body>
 	<h1>Bounding Volume Hierarchy System for Unity Gameobjects</h1>
-	![Alt Text](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMDVjZDllZTM4NzhkODQ3ODIzNDU3ZWU4Y2M4YmI1ZDI5YmIwYmQ5NiZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/GrCosevhizMaNytSFh/giphy-downsized-large.gif)
+	<img src="dbvh.gif" alt="Example GIF" width="500">
 	<p>This GitHub repository contains a Bounding Volume Hierarchy (BVH) system for Unity gameobjects. The system is designed to improve the performance of raycasting in Unity by organizing gameobjects into a binary tree structure using AABB (Axis-Aligned Bounding Boxes) for leaf nodes.</p>
 	<h2>Features</h2>
 	<ul>
