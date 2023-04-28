@@ -13,6 +13,7 @@ namespace DBVH
       protected AABB AABB = new();
       protected int Index = -1;
       protected Transform CachedTransform;
+      public int ObjectIndex => Index;
       protected virtual void Start()
       {
          Index = gameObject.GetInstanceID();
