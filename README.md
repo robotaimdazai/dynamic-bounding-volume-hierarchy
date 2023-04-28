@@ -16,7 +16,7 @@
 	</ul>
 	<h2>How to Use</h2>
 	<p>To use this system, simply add the DBVHCanvas.cs script to your canvas gameobject. This script manages the BVH hierarchy and is responsible for building, updating, and querying the binary tree structure. You can then call the BinaryTree.Raycast() method to perform fast and efficient raycasts in your game.</p>
-	<h3>Example Usage</h3>
+	
 <h2>Contributing</h2>
 <p>Contributions to this repository are welcome and encouraged! If you find a bug or have an idea for an improvement, please feel free to open an issue or submit a pull request.</p>
 <h2>License</h2>
