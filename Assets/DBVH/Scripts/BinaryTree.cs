@@ -103,7 +103,7 @@ namespace DBVH
             return objectIndex;
         }
     
-        private int PickBest(int leaf)
+        private int PickBestOld(int leaf)
         {
             //this algorithm is working on branch and bound pruning
             var sBest = _rootIndex;
@@ -144,6 +144,49 @@ namespace DBVH
                 if (child2 != _nullIndex) priorityQueue.Enqueue(child2);
             }
         
+            return sBest;
+        }
+        
+        private int PickBest(int leaf)
+        {
+            //this algorithm is working on branch and bound pruning
+            var sBest = _rootIndex;
+            var cBest = _nodes[_rootIndex].Box.Union(_nodes[leaf].Box).Area(); // SA(1 U L)
+            var priorityQueue = new PriorityQueue<int>();
+            priorityQueue.Enqueue(_rootIndex, cBest);
+            
+            while (priorityQueue.Count > 0)
+            {
+                var (index, cost) = priorityQueue.Dequeue();
+                if (index == _nullIndex) continue;
+
+                if (cost > cBest) break; // Stop exploring this branch
+
+                var node = _nodes[index];
+                var child1 = node.Child1;
+                var child2 = node.Child2;
+                //get direct cost for this node
+                float directCost = AABB.Area(AABB.Union(_nodes[leaf].Box, node.Box));
+                //calculate inherited cost for the node
+                float inheritedCost = 0f;
+                int currentIndex = _nodes[index].ParentIndex;
+                while (currentIndex != _nullIndex)
+                {
+                    inheritedCost += AABB.Area(AABB.Union(_nodes[leaf].Box, _nodes[currentIndex].Box)) - 
+                                     _nodes[currentIndex].Box.Area();
+                    currentIndex = _nodes[currentIndex].ParentIndex;
+                }
+                float finalCost = directCost + inheritedCost;
+                if (finalCost < cBest)
+                {
+                    cBest = finalCost;
+                    sBest = index;
+                }
+
+                if (child1 != _nullIndex) priorityQueue.Enqueue(child1, finalCost);
+                if (child2 != _nullIndex) priorityQueue.Enqueue(child2, finalCost);
+            }
+
             return sBest;
         }
         private void RefitAncestors(int index)
@@ -395,5 +438,80 @@ namespace DBVH
             }
             return true;
         }
+    }
+}
+
+public class PriorityQueue<T>
+{
+    private List<(T, float)> _items = new List<(T, float)>();
+    private readonly IComparer<(T, float)> _comparer;
+
+    public PriorityQueue() : this(Comparer<(T, float)>.Default) { }
+
+    public PriorityQueue(IComparer<(T, float)> comparer)
+    {
+        _comparer = comparer;
+    }
+
+    public int Count => _items.Count;
+
+    public void Enqueue(T item, float priority)
+    {
+        _items.Add((item, priority));
+        int i = _items.Count - 1;
+        while (i > 0)
+        {
+            int parent = (i - 1) / 2;
+            if (_comparer.Compare(_items[parent], _items[i]) <= 0)
+                break;
+
+            (T, float) tmp = _items[parent];
+            _items[parent] = _items[i];
+            _items[i] = tmp;
+            i = parent;
+        }
+    }
+
+    public (T, float) Dequeue()
+    {
+        if (_items.Count == 0)
+            throw new InvalidOperationException("Queue is empty.");
+
+        (T, float) result = _items[0];
+        int lastIndex = _items.Count - 1;
+        _items[0] = _items[lastIndex];
+        _items.RemoveAt(lastIndex);
+        lastIndex--;
+
+        int i = 0;
+        while (true)
+        {
+            int leftChild = i * 2 + 1;
+            int rightChild = i * 2 + 2;
+            if (leftChild > lastIndex)
+                break;
+
+            int j = leftChild;
+            if (rightChild <= lastIndex && _comparer.Compare(_items[rightChild], _items[leftChild]) < 0)
+                j = rightChild;
+
+            if (_comparer.Compare(_items[j], _items[i]) >= 0)
+                break;
+
+            (T, float) tmp = _items[j];
+            _items[j] = _items[i];
+            _items[i] = tmp;
+            i = j;
+        }
+
+        return result;
+    }
+
+    public (T, float) Peek()
+    {
+        if (_items.Count == 0)
+            throw new InvalidOperationException("Queue is empty.");
+
+        return _items[0];
     }
 }
