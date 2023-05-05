@@ -183,8 +183,8 @@ namespace DBVH
                     sBest = index;
                 }
 
-                if (child1 != _nullIndex) priorityQueue.Enqueue(child1, -finalCost);
-                if (child2 != _nullIndex) priorityQueue.Enqueue(child2, -finalCost);
+                if (child1 != _nullIndex) priorityQueue.Enqueue(child1, finalCost);
+                if (child2 != _nullIndex) priorityQueue.Enqueue(child2, finalCost);
             }
 
             return sBest;
